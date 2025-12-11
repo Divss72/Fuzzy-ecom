@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb (Navigation path) -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mt-4">
+        <!-- Left Side: Product Image -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}" class="img-fluid rounded" alt="{{ product.title }}">
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center bg-light rounded" style="height: 400px;">
+                        <i class="fa-solid fa-image fa-4x text-muted"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <!-- Small thumbnails could go here later -->
+        </div>
+
+        <!-- Right Side: Product Info -->
+        <div class="col-md-6">
+            <h1 class="display-5 fw-bold">{{ product.title }}</h1>
+            <p class="h3 text-success my-3">₹{{ product.price }}</p>
+            
+            <p class="lead">{{ product.description }}</p>
+
+            <hr>
+
+            <div class="d-flex gap-3 mt-4">
+                <!-- Add to Cart Form (We will activate this in Step 3) -->
+                <form action="{% url 'add_to_cart' product.slug %}" method="POST"> 
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-lg px-4">
+                        <i class="fa-solid fa-cart-shopping me-2"></i> Add to Cart
+                    </button>
+                </form>
+                
+                <button class="btn btn-outline-danger btn-lg" title="Add to Wishlist">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+            </div>
+
+            <div class="mt-4 p-3 bg-light rounded border">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fa-solid fa-truck text-primary me-2"></i> Fast Delivery</li>
+                    <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> In Stock</li>
+                    <li><i class="fa-solid fa-leaf text-success me-2"></i> Freshness Guaranteed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

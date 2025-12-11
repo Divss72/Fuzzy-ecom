@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-dark text-white text-center py-3">
+                    <h4 class="mb-0"><i class="fa-solid fa-lock"></i> Secure Checkout</h4>
+                </div>
+                <div class="card-body p-5">
+                    
+                    <h5 class="text-center text-muted mb-4">Complete your purchase</h5>
+
+                    <!-- Order Total Display -->
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                        <span class="h5 mb-0">Total Amount:</span>
+                        <span class="h4 text-success mb-0 fw-bold">₹{{ order.get_total }}</span>
+                    </div>
+
+                    <!-- Payment Details (Visual only) -->
+                    <div class="mb-4">
+                        <p class="text-muted small mb-1">Payment method</p>
+                        <div class="border rounded p-3 d-flex align-items-center">
+                            <i class="fa-brands fa-cc-visa fa-2x text-primary me-3"></i>
+                            <i class="fa-brands fa-cc-mastercard fa-2x text-danger me-3"></i>
+                            <span class="ms-auto text-dark fw-bold">Razorpay Secure</span>
+                        </div>
+                    </div>
+
+                    <!-- Pay Button -->
+                    <button id="rzp-button1" class="btn btn-success btn-lg w-100 shadow-sm">
+                        Pay Now <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </button>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'cart_view' %}" class="text-decoration-none text-muted small">
+                            <i class="fa-solid fa-arrow-left"></i> Cancel and go back to cart
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RAZORPAY INTEGRATION SCRIPT -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "{{ razorpay_merchant_key }}", // Enter the Key ID generated from the Dashboard
+    "amount": "{{ razorpay_amount }}", // Amount is in currency subunits. Default currency is INR.
+    "currency": "{{ currency }}",
+    "name": "Fuzzy Project", // Your Business Name
+    "description": "Succulent Order Payment",
+    "image": "https://cdn-icons-png.flaticon.com/512/2921/2921223.png", // Optional Logo
+    "order_id": "{{ razorpay_order_id }}", // This is the order_id created in views.py
+    "handler": function (response){
+        // This function runs when payment is successful
+        
+        // We create a hidden form to send the success data back to Django
+        var form = document.createElement("form");
+        form.action = "{% url 'payment_success' %}";
+        form.method = "POST";
+
+        var input1 = document.createElement("input");
+        input1.type = "hidden";
+        input1.name = "razorpay_payment_id";
+        input1.value = response.razorpay_payment_id;
+        
+        var input2 = document.createElement("input");
+        input2.type = "hidden";
+        input2.name = "razorpay_order_id";
+        input2.value = response.razorpay_order_id;
+
+        var input3 = document.createElement("input");
+        input3.type = "hidden";
+        input3.name = "razorpay_signature";
+        input3.value = response.razorpay_signature;
+
+        form.appendChild(input1);
+        form.appendChild(input2);
+        form.appendChild(input3);
+
+        document.body.appendChild(form);
+        form.submit();
+    },
+    "prefill": {
+        "name": "{{ request.user.username }}",
+        "email": "{{ request.user.email }}",
+        "contact": "" // You can fill this if you have user's phone number
+    },
+    "theme": {
+        "color": "#198754" // Matches Bootstrap success green
+    }
+};
+
+document.getElementById('rzp-button1').onclick = function(e){
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+{% endblock %}
