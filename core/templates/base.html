@@ -14,7 +14,7 @@
     <style>
         body { background-color: #f8f9fa; }
         .navbar-brand { font-weight: bold; color: #2c3e50 !important; }
-        .card { transition: transform 0.2s; border: none; shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card { transition: transform 0.2s; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .footer { background: #2c3e50; color: white; padding: 40px 0; margin-top: 50px; }
     </style>
@@ -32,34 +32,40 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Search Bar with Success Green aesthetic -->
+                <form class="d-flex mx-auto col-md-5 my-2 my-lg-0" method="GET" action="{% url 'home' %}">
+                    <div class="input-group">
+                        <input class="form-control border-end-0 border-success" type="search" name="q" placeholder="Search succulents..." aria-label="Search" value="{{ query|default:'' }}">
+                        <button class="btn btn-outline-success border-start-0" type="submit">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                </form>
+
                 <ul class="navbar-nav ms-auto align-items-center">
-                    <!-- Standard Links -->
                     <li class="nav-item">
                         <a class="nav-link active" href="/">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Shop</a>
-                    </li>
                     <li class="nav-item me-3">
-                        <a class="nav-link" href="#">About</a>
+                        <a class="nav-link" href="{% url 'custom_order' %}">Custom Request</a>
                     </li>
                     
-                    <!-- Dynamic Auth Links (Login/Logout logic) -->
+                    <!-- Dynamic Auth Links -->
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="btn btn-outline-dark position-relative me-2" href="{% url 'cart_view' %}">
+                            <a class="btn btn-outline-dark position-relative me-3" href="{% url 'cart_view' %}" title="View Cart">
                                 <i class="fa-solid fa-cart-shopping"></i>
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    0
+                                    {{ cart_count }}
                                 </span>
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle fw-semibold" href="#" role="button" data-bs-toggle="dropdown">
                                 Hello, {{ user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#">Orders</a></li>
+                                <li><a class="dropdown-item" href="{% url 'cart_view' %}">My Cart</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form action="{% url 'logout' %}" method="post">
@@ -84,6 +90,18 @@
 
     <!-- Main Content Block -->
     <div style="min-height: 80vh;">
+        <!-- Django Messages Alerts -->
+        {% if messages %}
+            <div class="container mt-4">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         {% block content %}
         {% endblock %}
     </div>
@@ -91,7 +109,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container text-center">
-            <p>&copy; 2025 Fuzzy Project. Grown with <i class="fa-solid fa-heart text-danger"></i> by You.</p>
+            <p>&copy; 2026 Fuzzy Project. Grown with <i class="fa-solid fa-heart text-danger"></i> by You.</p>
             <div>
                 <a href="#" class="text-white me-3"><i class="fa-brands fa-instagram"></i></a>
                 <a href="#" class="text-white me-3"><i class="fa-brands fa-facebook"></i></a>
