@@ -156,6 +156,26 @@
         .fade-in-card:nth-child(4) { animation-delay: 0.16s; }
         .fade-in-card:nth-child(5) { animation-delay: 0.20s; }
         .fade-in-card:nth-child(6) { animation-delay: 0.24s; }
+
+        /* Autocomplete dropdown styles */
+        #search-results-dropdown .dropdown-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(26, 56, 44, 0.05);
+            transition: background-color 0.2s ease;
+        }
+        #search-results-dropdown .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        #search-results-dropdown .dropdown-item:hover {
+            background-color: #f7f9f6;
+        }
+        #search-results-dropdown mark {
+            background-color: rgba(59, 122, 87, 0.15);
+            color: #1a382c;
+            padding: 0 2px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -172,13 +192,14 @@
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <!-- Search Bar with Success Green aesthetic -->
-                <form class="d-flex mx-auto col-md-5 my-2 my-lg-0" method="GET" action="{% url 'home' %}">
+                <form class="d-flex mx-auto col-md-5 my-2 my-lg-0 position-relative" method="GET" action="{% url 'home' %}" id="search-form">
                     <div class="input-group">
-                        <input class="form-control border-end-0 border-success" type="search" name="q" placeholder="Search succulents..." aria-label="Search" value="{{ query|default:'' }}">
+                        <input class="form-control border-end-0 border-success" type="search" name="q" id="search-input" placeholder="Search succulents..." aria-label="Search" autocomplete="off" value="{{ query|default:'' }}">
                         <button class="btn btn-outline-success border-start-0" type="submit">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </button>
                     </div>
+                    <div id="search-results-dropdown" class="dropdown-menu w-100 shadow-lg border-0 py-0" style="display: none; position: absolute; top: 100%; left: 0; z-index: 1000; border-radius: 12px; margin-top: 5px; overflow: hidden; background: #ffffff;"></div>
                 </form>
 
                 <ul class="navbar-nav ms-auto align-items-center">
@@ -293,6 +314,79 @@
                         btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
                     }
                 });
+            }
+
+            // 3. Instant Fuzzy Autocomplete Search
+            const searchInput = document.getElementById('search-input');
+            const resultsDropdown = document.getElementById('search-results-dropdown');
+            let debounceTimer;
+
+            if (searchInput && resultsDropdown) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    const query = this.value.trim();
+                    
+                    if (query.length < 2) {
+                        resultsDropdown.style.display = 'none';
+                        resultsDropdown.innerHTML = '';
+                        return;
+                    }
+                    
+                    debounceTimer = setTimeout(() => {
+                        fetch(`/api/search-autocomplete/?q=${encodeURIComponent(query)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.results && data.results.length > 0) {
+                                    resultsDropdown.innerHTML = '';
+                                    data.results.forEach(item => {
+                                        const div = document.createElement('a');
+                                        div.href = item.url;
+                                        div.className = 'dropdown-item d-flex align-items-center text-decoration-none';
+                                        
+                                        const imgHtml = item.image_url 
+                                            ? `<img src="${item.image_url}" class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;">`
+                                            : `<div class="d-flex align-items-center justify-content-center bg-light rounded me-3" style="width: 40px; height: 40px;"><i class="fa-solid fa-image text-secondary" style="font-size: 14px;"></i></div>`;
+                                        
+                                        const highlightedTitle = highlightText(item.title, query);
+                                        
+                                        div.innerHTML = `
+                                            ${imgHtml}
+                                            <div class="flex-grow-1">
+                                                <div class="text-dark fw-semibold mb-0" style="font-size: 14px;">${highlightedTitle}</div>
+                                                <div class="text-muted small" style="font-size: 11px;">${item.category}</div>
+                                            </div>
+                                            <div class="text-success fw-bold ms-3" style="font-size: 14px;">₹${item.price}</div>
+                                        `;
+                                        resultsDropdown.appendChild(div);
+                                    });
+                                    resultsDropdown.style.display = 'block';
+                                } else {
+                                    resultsDropdown.style.display = 'none';
+                                    resultsDropdown.innerHTML = '';
+                                }
+                            });
+                    }, 250);
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
+                        resultsDropdown.style.display = 'none';
+                    }
+                });
+                
+                searchInput.addEventListener('focus', function() {
+                    if (this.value.trim().length >= 2 && resultsDropdown.innerHTML !== '') {
+                        resultsDropdown.style.display = 'block';
+                    }
+                });
+            }
+
+            function highlightText(text, query) {
+                const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                const parts = escapedQuery.split(/\s+/).filter(p => p.length > 0);
+                if (parts.length === 0) return text;
+                const pattern = new RegExp(`(${parts.join('|')})`, 'gi');
+                return text.replace(pattern, '<mark>$1</mark>');
             }
         });
     </script>

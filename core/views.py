@@ -236,3 +236,27 @@ def register(request):
     else:
         form = UserCreationForm()
     return render(request, 'core/register.html', {'form': form})
+
+from django.http import JsonResponse
+from django.urls import reverse
+
+def search_autocomplete(request):
+    query = request.GET.get('q', '')
+    if not query or len(query.strip()) < 2:
+        return JsonResponse({'results': []})
+        
+    products = fuzzy_search_products(query)[:5]
+    results = []
+    for product in products:
+        image_url = ""
+        if product.images.first():
+            image_url = product.images.first().image.url
+        
+        results.append({
+            'title': product.title,
+            'price': str(product.price),
+            'url': reverse('product_detail', args=[product.slug]),
+            'category': product.category.name if product.category else '',
+            'image_url': image_url
+        })
+    return JsonResponse({'results': results})

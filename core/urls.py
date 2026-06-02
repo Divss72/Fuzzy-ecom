@@ -11,6 +11,7 @@ urlpatterns = [
     path('add-to-cart/<slug:slug>/', views.add_to_cart, name='add_to_cart'),
     path('decrease-quantity/<slug:slug>/', views.decrease_quantity, name='decrease_quantity'),
     path('remove-from-cart/<slug:slug>/', views.remove_from_cart, name='remove_from_cart'),
+    path('api/search-autocomplete/', views.search_autocomplete, name='search_autocomplete'),
     
     # Auth URLs
     path('register/', views.register, name='register'),
