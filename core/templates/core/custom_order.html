@@ -2,55 +2,318 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+<!-- Include Flatpickr for datepicker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<style>
+    .wizard-step-label {
+        position: relative;
+        width: 25%;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    .wizard-step-label::after {
+        content: '';
+        display: block;
+        width: 12px;
+        height: 12px;
+        background-color: #dee2e6;
+        border-radius: 50%;
+        margin: 8px auto 0 auto;
+        transition: all 0.3s ease;
+    }
+    .wizard-step-label.active-step::after {
+        background-color: #1a382c;
+        box-shadow: 0 0 0 4px rgba(59, 122, 87, 0.25);
+    }
+    .wizard-step-label.active-step {
+        font-weight: 700;
+    }
+    .step-pane {
+        transition: opacity 0.3s ease;
+    }
+</style>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg border-0 rounded-3">
+                <!-- Header -->
                 <div class="card-header bg-success text-white text-center py-4">
                     <h2 class="mb-0 fw-bold"><i class="fa-solid fa-leaf me-2"></i> Custom Succulent Request</h2>
-                    <p class="mb-0 text-white-50 mt-2">Looking for a specific variety, custom arrangement, or corporate order? Tell us your requirements!</p>
+                    <p class="mb-0 text-white-50 mt-2">Design your dream succulent arrangement in a few simple steps!</p>
                 </div>
+                
                 <div class="card-body p-5">
-                    <form method="POST" enctype="multipart/form-data" novalidate>
+                    <!-- Progress Bar -->
+                    <div class="progress mb-4" style="height: 6px;">
+                        <div id="wizard-progress" class="progress-bar bg-success" role="progressbar" style="width: 25%; transition: width 0.3s ease;"></div>
+                    </div>
+                    
+                    <!-- Steps labels -->
+                    <div class="d-flex justify-content-between mb-5 text-center small text-muted fw-semibold">
+                        <div class="wizard-step-label active-step" data-step="1">1. Contact</div>
+                        <div class="wizard-step-label" data-step="2">2. Details</div>
+                        <div class="wizard-step-label" data-step="3">3. Preferences</div>
+                        <div class="wizard-step-label" data-step="4">4. Confirm</div>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" novalidate id="wizard-form">
                         {% csrf_token %}
                         
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.name|as_crispy_field }}
+                        <!-- STEP 1: CONTACT DETAILS -->
+                        <div class="step-pane" id="step-1">
+                            <h4 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-user text-success me-2"></i> Contact Details</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.name|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.email|as_crispy_field }}
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.email|as_crispy_field }}
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="mb-4">
                                 {{ form.phone|as_crispy_field }}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.budget|as_crispy_field }}
+                            
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="button" class="btn btn-success px-4 py-2 next-step-btn fw-bold">
+                                    Next Step <i class="fa-solid fa-arrow-right ms-2"></i>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            {{ form.deadline|as_crispy_field }}
+                        <!-- STEP 2: DETAILS -->
+                        <div class="step-pane" id="step-2" style="display: none;">
+                            <h4 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-pen text-success me-2"></i> Succulent Requirements</h4>
+                            <div class="mb-4">
+                                {{ form.description|as_crispy_field }}
+                                <div class="form-text">Describe what kind of succulent, pot type, or arrangement you are looking for (minimum 10 characters).</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary px-4 py-2 prev-step-btn fw-bold">
+                                    <i class="fa-solid fa-arrow-left me-2"></i> Previous
+                                </button>
+                                <button type="button" class="btn btn-success px-4 py-2 next-step-btn fw-bold">
+                                    Next Step <i class="fa-solid fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            {{ form.description|as_crispy_field }}
+                        <!-- STEP 3: PREFERENCES -->
+                        <div class="step-pane" id="step-3" style="display: none;">
+                            <h4 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-sliders text-success me-2"></i> Budget & Preferences</h4>
+                            
+                            <!-- Custom Budget Slider -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-dark mb-1">Estimated Budget (INR)</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="range" class="form-range flex-grow-1" min="100" max="10000" step="50" id="budget-slider" value="1000">
+                                    <div class="input-group shadow-sm" style="width: 140px;">
+                                        <span class="input-group-text bg-light">₹</span>
+                                        <input type="number" name="budget" id="budget-input" class="form-control fw-bold text-success text-center" value="1000" min="100" max="10000">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    {{ form.deadline|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    {{ form.reference_image|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary px-4 py-2 prev-step-btn fw-bold">
+                                    <i class="fa-solid fa-arrow-left me-2"></i> Previous
+                                </button>
+                                <button type="button" class="btn btn-success px-4 py-2 next-step-btn fw-bold">
+                                    Next Step <i class="fa-solid fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            {{ form.reference_image|as_crispy_field }}
-                        </div>
+                        <!-- STEP 4: CONFIRMATION -->
+                        <div class="step-pane" id="step-4" style="display: none;">
+                            <h4 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-circle-check text-success me-2"></i> Confirm Your Request</h4>
+                            
+                            <div class="bg-light p-4 rounded-3 border mb-4 shadow-sm">
+                                <div class="row mb-3">
+                                    <div class="col-sm-4 text-muted fw-bold">Customer Name:</div>
+                                    <div class="col-sm-8 text-dark fw-semibold" id="summary-name"></div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-4 text-muted fw-bold">Email Address:</div>
+                                    <div class="col-sm-8 text-dark" id="summary-email"></div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-4 text-muted fw-bold">Phone Number:</div>
+                                    <div class="col-sm-8 text-dark" id="summary-phone"></div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-4 text-muted fw-bold">Estimated Budget:</div>
+                                    <div class="col-sm-8 text-success fw-bold" id="summary-budget"></div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-4 text-muted fw-bold">Desired Deadline:</div>
+                                    <div class="col-sm-8 text-dark" id="summary-deadline"></div>
+                                </div>
+                                <hr>
+                                <div class="mb-0">
+                                    <div class="text-muted fw-bold mb-2">Request Details:</div>
+                                    <p class="text-dark bg-white p-3 rounded border mb-0" id="summary-description" style="white-space: pre-wrap; font-size: 0.95rem;"></p>
+                                </div>
+                            </div>
 
-                        <button type="submit" class="btn btn-success btn-lg w-100 shadow-sm py-3 fw-bold">
-                            Submit Request <i class="fa-solid fa-paper-plane ms-2"></i>
-                        </button>
+                            <div class="alert alert-info shadow-sm" role="alert">
+                                <i class="fa-solid fa-info-circle me-2"></i> Please review your choices. Once submitted, our team will review your requirements and get in touch within 24 hours.
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary px-4 py-2 prev-step-btn fw-bold">
+                                    <i class="fa-solid fa-arrow-left me-2"></i> Previous
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg px-4 py-2 fw-bold shadow-sm">
+                                    Submit Request <i class="fa-solid fa-paper-plane ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- JavaScript Wizard controller -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let currentStep = 1;
+        const totalSteps = 4;
+        
+        const progress = document.getElementById("wizard-progress");
+        const labelSteps = document.querySelectorAll(".wizard-step-label");
+        const stepPanes = document.querySelectorAll(".step-pane");
+        
+        function showStep(step) {
+            stepPanes.forEach(pane => pane.style.display = "none");
+            document.getElementById(`step-${step}`).style.display = "block";
+            
+            // Progress bar updates
+            const percent = (step / totalSteps) * 100;
+            progress.style.width = `${percent}%`;
+            
+            // Label step updates
+            labelSteps.forEach((label, idx) => {
+                if (idx + 1 === step) {
+                    label.classList.add("active-step", "text-success");
+                    label.classList.remove("text-muted");
+                } else {
+                    label.classList.remove("active-step", "text-success");
+                    label.classList.add("text-muted");
+                }
+            });
+
+            // Summary population on Step 4
+            if (step === 4) {
+                document.getElementById("summary-name").textContent = document.getElementById("id_name").value || "Not provided";
+                document.getElementById("summary-email").textContent = document.getElementById("id_email").value || "Not provided";
+                document.getElementById("summary-phone").textContent = document.getElementById("id_phone").value || "Not provided";
+                document.getElementById("summary-description").textContent = document.getElementById("id_description").value || "No detailed description provided.";
+                document.getElementById("summary-budget").textContent = "₹" + (document.getElementById("budget-input").value || "0");
+                document.getElementById("summary-deadline").textContent = document.getElementById("id_deadline").value || "Not specified";
+            }
+        }
+        
+        // Validate current step fields
+        function validateStep(step) {
+            let isValid = true;
+            if (step === 1) {
+                const name = document.getElementById("id_name");
+                const email = document.getElementById("id_email");
+                const phone = document.getElementById("id_phone");
+                
+                if (!name.value.trim()) {
+                    name.classList.add("is-invalid");
+                    isValid = false;
+                } else {
+                    name.classList.remove("is-invalid");
+                }
+                
+                if (!email.value.trim() || !email.value.includes("@")) {
+                    email.classList.add("is-invalid");
+                    isValid = false;
+                } else {
+                    email.classList.remove("is-invalid");
+                }
+                
+                if (!phone.value.trim()) {
+                    phone.classList.add("is-invalid");
+                    isValid = false;
+                } else {
+                    phone.classList.remove("is-invalid");
+                }
+            } else if (step === 2) {
+                const desc = document.getElementById("id_description");
+                if (!desc.value.trim() || desc.value.length < 10) {
+                    desc.classList.add("is-invalid");
+                    isValid = false;
+                } else {
+                    desc.classList.remove("is-invalid");
+                }
+            }
+            return isValid;
+        }
+        
+        // Next button clicks
+        document.querySelectorAll(".next-step-btn").forEach(btn => {
+            btn.addEventListener("click", function() {
+                if (validateStep(currentStep)) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            });
+        });
+        
+        // Previous button clicks
+        document.querySelectorAll(".prev-step-btn").forEach(btn => {
+            btn.addEventListener("click", function() {
+                currentStep--;
+                showStep(currentStep);
+            });
+        });
+        
+        // Slider - Input binding
+        const slider = document.getElementById("budget-slider");
+        const input = document.getElementById("budget-input");
+        
+        if (slider && input) {
+            slider.addEventListener("input", function() {
+                input.value = this.value;
+            });
+            
+            input.addEventListener("input", function() {
+                slider.value = this.value;
+            });
+        }
+
+        // Initialize Flatpickr for deadline
+        if (document.getElementById("id_deadline")) {
+            flatpickr("#id_deadline", {
+                minDate: "today",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "F j, Y",
+                allowInput: true
+            });
+        }
+
+        // Show initial step
+        showStep(currentStep);
+    });
+</script>
 {% endblock %}
