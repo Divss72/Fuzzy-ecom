@@ -8,15 +8,118 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { background-color: #f8f9fa; }
-        .navbar-brand { font-weight: bold; color: #2c3e50 !important; }
-        .card { transition: transform 0.2s; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .footer { background: #2c3e50; color: white; padding: 40px 0; margin-top: 50px; }
+        :root {
+            --primary-color: #1a382c; /* Curated deep forest green */
+            --accent-color: #3b7a57;  /* Sage green accent */
+            --bg-color: #f7f9f6;      /* Soft nature-white background */
+            --text-color: #2b3a32;    /* Soft charcoal-green text */
+            --card-shadow: 0 10px 30px rgba(26, 56, 44, 0.05);
+            --card-hover-shadow: 0 20px 40px rgba(26, 56, 44, 0.12);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        h1, h2, h3, h4, h5, h6, .navbar-brand {
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary-color) !important;
+            font-weight: 700;
+        }
+
+        /* Custom button overrides */
+        .btn-success {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .btn-success:hover, .btn-success:focus {
+            background-color: var(--accent-color) !important;
+            border-color: var(--accent-color) !important;
+        }
+        .btn-outline-success {
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .btn-outline-success:hover {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        /* Custom navbar overrides */
+        .navbar {
+            border-bottom: 1px solid rgba(26, 56, 44, 0.08);
+            background-color: #ffffff !important;
+        }
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px;
+        }
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-color) !important;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-color) !important;
+        }
+
+        /* Custom card overrides */
+        .card {
+            border-radius: 16px !important;
+            background-color: #ffffff;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            border: none !important;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        /* Search bar styling */
+        .input-group .form-control {
+            border-radius: 20px 0 0 20px !important;
+            border-color: rgba(26, 56, 44, 0.15) !important;
+        }
+        .input-group .btn {
+            border-radius: 0 20px 20px 0 !important;
+            border-color: rgba(26, 56, 44, 0.15) !important;
+        }
+
+        /* Footer overrides */
+        .footer {
+            background-color: var(--primary-color) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px 0;
+            margin-top: 50px;
+            color: #ffffff !important;
+        }
+
+        /* Alert overrides */
+        .alert {
+            border-radius: 12px !important;
+            border: none !important;
+        }
+        .alert-success {
+            background-color: #eef7f2 !important;
+            color: var(--primary-color) !important;
+        }
+        .alert-danger {
+            background-color: #fdf2f2 !important;
+            color: #9b1c1c !important;
+        }
     </style>
 </head>
 <body>
