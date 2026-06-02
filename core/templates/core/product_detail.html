@@ -35,11 +35,11 @@
             <hr>
 
             <div class="d-flex gap-3 mt-4">
-                <!-- Add to Cart Form (We will activate this in Step 3) -->
-                <form action="{% url 'add_to_cart' product.slug %}" method="POST"> 
+                <!-- Add to Cart Form -->
+                <form action="{% url 'add_to_cart' product.slug %}" method="POST" class="add-to-cart-form"> 
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-lg px-4">
-                        <i class="fa-solid fa-cart-shopping me-2"></i> Add to Cart
+                    <button type="submit" class="btn btn-success btn-lg px-4 add-to-cart-btn">
+                        <i class="fa-solid fa-cart-shopping me-2 icon-cart"></i> <span class="btn-text">Add to Cart</span>
                     </button>
                 </form>
                 
